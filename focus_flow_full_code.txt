@@ -1,0 +1,215 @@
+
+Focus Flow App Code - Full Setup
+
+1. App Overview:
+This is a simple Focus Flow app using React and Tailwind CSS to track focus time using a Pomodoro timer and manage tasks.
+It includes premium subscription features and a dark theme toggle.
+
+2. App.js (Main Component):
+
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
+import './App.css';
+import Timer from './components/Timer';
+import TaskList from './components/TaskList';
+
+function App() {
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dark');
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
+  return (
+    <div className={\`App \${theme}\`}>
+      <button className="theme-toggle" onClick={toggleTheme}>Toggle Theme</button>
+      <Router>
+        <nav>
+          <ul>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/premium">Premium</Link></li>
+          </ul>
+        </nav>
+        <Switch>
+          <Route path="/" exact component={Home} />
+          <Route path="/premium" component={Premium} />
+        </Switch>
+      </Router>
+    </div>
+  );
+}
+
+const Home = () => (
+  <div className="container">
+    <h1 className="text-xl">Focus Timer</h1>
+    <p>Track your focus time with a Pomodoro timer!</p>
+    <Timer />
+    <TaskList />
+  </div>
+);
+
+const Premium = () => (
+  <div className="container">
+    <h1 className="text-xl">Premium Features</h1>
+    <p>Unlock advanced features with a $4 subscription.</p>
+  </div>
+);
+
+export default App;
+
+3. Timer.js (Timer Component):
+
+import React, { useState, useEffect } from 'react';
+
+const Timer = () => {
+  const [minutes, setMinutes] = useState(25);
+  const [seconds, setSeconds] = useState(0);
+  const [isActive, setIsActive] = useState(false);
+
+  const startTimer = () => setIsActive(true);
+  const stopTimer = () => setIsActive(false);
+
+  useEffect(() => {
+    let interval;
+    if (isActive) {
+      interval = setInterval(() => {
+        if (seconds === 0) {
+          if (minutes === 0) {
+            stopTimer(); // Timer ends
+          } else {
+            setMinutes(minutes - 1);
+            setSeconds(59);
+          }
+        } else {
+          setSeconds(seconds - 1);
+        }
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isActive, minutes, seconds]);
+
+  return (
+    <div>
+      <h2>{minutes}:{seconds < 10 ? \`0\${seconds}\` : seconds}</h2>
+      <button onClick={startTimer}>Start</button>
+      <button onClick={stopTimer}>Stop</button>
+    </div>
+  );
+};
+
+export default Timer;
+
+4. TaskList.js (Task List Component):
+
+import React, { useState } from 'react';
+
+const TaskList = () => {
+  const [tasks, setTasks] = useState([]);
+  const [newTask, setNewTask] = useState('');
+
+  const addTask = () => {
+    if (newTask.trim() !== '') {
+      setTasks([...tasks, { text: newTask, completed: false }]);
+      setNewTask('');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Task List</h2>
+      <input 
+        type="text" 
+        value={newTask} 
+        onChange={(e) => setNewTask(e.target.value)} 
+        placeholder="Add a new task" 
+      />
+      <button onClick={addTask}>Add Task</button>
+      <ul>
+        {tasks.map((task, index) => (
+          <li key={index}>{task.text}</li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default TaskList;
+
+5. index.js (Entry Point):
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import { BrowserRouter } from 'react-router-dom';
+
+ReactDOM.render(
+  <BrowserRouter>
+    <App />
+  </BrowserRouter>,
+  document.getElementById('root')
+);
+
+6. tailwind.config.js (Tailwind CSS Config):
+
+module.exports = {
+  darkMode: 'class',
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+
+7. public/index.html (HTML Template):
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Focus Flow App</title>
+  </head>
+  <body class="dark:bg-gray-900 bg-white text-gray-800 dark:text-white">
+    <div id="root"></div>
+  </body>
+</html>
+
+8. package.json (Dependencies):
+
+{
+  "name": "focus-flow",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-router-dom": "^5.1.0",
+    "tailwindcss": "^2.1.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "devDependencies": {
+    "postcss": "^8.1.0",
+    "autoprefixer": "^10.0.2"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
